@@ -1,0 +1,21 @@
+{
+  "name": "Edith-MD",
+  "description": "WhatsApp Multi-Device Bot",
+  "repository": "https://github.com/Bandah-E-Ali/Edith-MD",
+  "logo": "https://raw.githubusercontent.com/Bandah-E-Ali/Edith-MD/main/assets/logo.png",
+  "keywords": ["whatsapp", "bot", "edith-md", "baileys"],
+  "env": {
+    "GITHUB_TOKEN": {
+      "description": "Your GitHub Personal Access Token (PAT) with repo permissions",
+      "required": true
+    },
+    "GITHUB_REPO_OWNER": {
+      "description": "GitHub username or organization that owns the repository",
+      "required": true
+    },
+    "GITHUB_REPO_NAME": {
+      "description": "The name of the GitHub repository",
+      "required": true
+    }
+  }
+}

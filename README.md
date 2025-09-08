@@ -1,1 +1,1 @@
-# snowbirdmini
+# CXD-MINI-BOT

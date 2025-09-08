@@ -643,6 +643,7 @@ function setupCommandHandlers(socket, number) {
 - ${config.PREFIX}ping
 - ${config.PREFIX}uptime
 - ${config.PREFIX}repo
+- ${config.PREFIX}song
 - ${config.PREFIX}pair
 - ${config.PREFIX}tagall
 - ${config.PREFIX}deleteme / confirm
@@ -693,6 +694,58 @@ function setupCommandHandlers(socket, number) {
                     });
                     break;
                 }
+                
+                case 'song': {
+    try {
+        if (!args[0]) {
+            await socket.sendMessage(sender, { text: "❌ Please provide a song name.\n\nExample: *.song despacito*" });
+            break;
+        }
+
+        const query = args.join(" ");
+        await socket.sendMessage(sender, { text: `🔎 Searching for *${query}*...` });
+
+        // Import ytdl-core and yt-search
+        const yts = require("yt-search");
+        const ytdl = require("ytdl-core");
+        const fs = require("fs");
+
+        // Search the song on YouTube
+        let search = await yts(query);
+        let video = search.videos[0];
+        if (!video) {
+            await socket.sendMessage(sender, { text: "❌ No results found." });
+            break;
+        }
+
+        const infoMsg = `🎶 *Title:* ${video.title}
+👤 *Artist/Channel:* ${video.author.name}
+⏱️ *Duration:* ${video.timestamp}
+🔗 *Link:* ${video.url}`;
+
+        await socket.sendMessage(sender, { text: infoMsg });
+
+        // Download the song as audio
+        const stream = ytdl(video.url, { filter: "audioonly" });
+        const filePath = `./${video.videoId}.mp3`;
+        const writeStream = fs.createWriteStream(filePath);
+        stream.pipe(writeStream);
+
+        writeStream.on("finish", async () => {
+            await socket.sendMessage(sender, {
+                audio: { url: filePath },
+                mimetype: "audio/mp4"
+            }, { quoted: m });
+
+            fs.unlinkSync(filePath); // delete after sending
+        });
+
+    } catch (err) {
+        console.error(err);
+        await socket.sendMessage(sender, { text: "⚠️ Failed to download song. Try again later." });
+    }
+    break;
+}
 
                 case 'repo': {
                     await socket.sendMessage(sender, {

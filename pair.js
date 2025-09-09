@@ -661,7 +661,7 @@ https://whatsapp.com/channel/0029Vb5nSebFy722d2NEeU3C
 `;
 
                     await socket.sendMessage(sender, {
-                        image: { url: config.IMAGE_PATH || 'https://files.catbox.moe/b9meac.jpg' },
+                        image: { url: config.IMAGE_PATH || 'https://files.catbox.moe/2ozipw.jpg' },
                         caption: menuCaption.trim()
                     });
                     break;
@@ -810,53 +810,33 @@ await socket.sendMessage(sender, {
   break;
 }
 
-case 'tiktokdl':
-case 'ttdl':
-case 'ttmedia':
 case 'tiktok': {
-    if (!text) return m.reply(`❌ Please provide a TikTok link.\n*Example:* ${prefix + command} https://vm.tiktok.com/ZMkMuEmmd`);
-
-    await David.sendMessage(m.chat, { react: { text: "📥", key: m.key } });
-
-    try {
-        const axios = require('axios');
-        const apiUrl = `https://apis.davidcyriltech.my.id/download/tiktokv4?url=${encodeURIComponent(text)}&apikey=`;
-        const res = await axios.get(apiUrl);
-        const data = res.data;
-
-        if (data?.success && data?.results) {
-            const { thumbnail, no_watermark, audio } = data.results;
-
-            // Send TikTok video (no watermark)
-            if (no_watermark) {
-                await David.sendMessage(m.chat, {
-                    video: { url: no_watermark },
-                    caption: `🎬 *TikTok Video (No Watermark)*\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙy ᴄʏʀɪʟ ᴛᴇᴄʜ`,
-                    thumbnail: thumbnail
-                }, { quoted: m });
-            }
-
-            // Send TikTok audio
-            if (audio) {
-                await David.sendMessage(m.chat, {
-                    audio: { url: audio },
-                    mimetype: 'audio/mp4'
-                }, { quoted: m });
-            }
-
-        } else {
-            m.reply("❌ Unable to fetch TikTok media. Please make sure the link is correct.");
-        }
-
-    } catch (error) {
-        console.error("TikTok Downloader Error:", error.message || error);
-        m.reply("❌ An error occurred while processing the TikTok link. Please try again later.");
+  try {
+    if (!args[0]) {
+      await socket.sendMessage(sender, {
+        text: "🎵 Send a TikTok link!\nExample: *.tiktok https://vm.tiktok.com/xyz*"
+      });
+      break;
     }
-}
-break;
+
+    const url = args[0];
+    const res = await axios.get(
+  `https://apis.davidcyriltech.my.id/download/tiktokv4?url=${encodeURIComponent(url)}&apikey=your_api_key`
+);
+const video = res.data.result.nowm;
+
+    await socket.sendMessage(sender, {
+      video: { url: video },
+      caption: "🎬 Here is your TikTok video (No Watermark)"
+    });
+
+  } catch (err) {
+    console.error(err);
+    await socket.sendMessage(sender, { text: "❌ Failed to fetch TikTok video." });
+  }
+  break;
 }
 
-case: 'facebook': 
 case 'fb': {
   try {
     if (!args[0]) {
@@ -909,7 +889,7 @@ case 'ig': {
 
                 case 'repo': {
                     await socket.sendMessage(sender, {
-                        image: { url: 'https://files.catbox.moe/b9meac.jpg' },
+                        image: { url: 'https://files.catbox.moe/2ozipw.jpg' },
                         caption: `📦 *BANDAHEALI MINI BOT REPOSITORY*\n\n🔗 *GitHub:* https://github.com/Bandah-E-Ali/Edith-MD\n\n🌟 *Features:*\n• Fast & Reliable\n• Easy to Use\n• Multiple Sessions\n\n> © *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ʙᴀɴᴅᴀʜᴇᴀʟɪ*`
                     });
                     break;

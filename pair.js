@@ -626,7 +626,10 @@ function setupCommandHandlers(socket, number) {
                     const ramUsage = Math.round(process.memoryUsage().rss / 1024 / 1024);
                     const totalRam = Math.round(os.totalmem() / 1024 / 1024);
 
-                    const menuCaption = `
+                    const channelJid = '120363399707841760@newsletter'; // Your channel JID
+const channelName = 'Cyberdevs Mini Updates';       // Your channel name
+
+const menuCaption = `
 👋 *Hi ${number}*
 
 ╭───『 *Cyberdevs Mini* 』
@@ -637,42 +640,46 @@ function setupCommandHandlers(socket, number) {
 │ ✏️ *ᴘʀᴇғɪx*: ${config.PREFIX}
 ╰─────────────────────╯
 
-🌏 System Commands:
-- ${config.PREFIX}alive-show bot status
-- ${config.PREFIX}menu-see bot commands
-- ${config.PREFIX}ping-Check bot speed
-- ${config.PREFIX}uptime-bot uptime
-- ${config.PREFIX}repo-Bot website
-- ${config.PREFIX}tagall-Tag all group members
-- ${config.PREFIX}deleteme / confirm-remove your bot
+🌏 *System Commands*:
+- ⚡ ${config.PREFIX}alive-show : Bot status
+- 📜 ${config.PREFIX}menu-see : View bot commands
+- 🏓 ${config.PREFIX}ping : Check bot speed
+- ⏱️ ${config.PREFIX}uptime : Bot uptime
+- 🌐 ${config.PREFIX}repo : Bot website
+- 🏷️ ${config.PREFIX}tagall : Tag all group members
+- ❌ ${config.PREFIX}deleteme : Remove your bot
 
-⏬️Download Menu
-- ${config.PREFIX}song-download song 
-- ${config.PREFIX}play-download song
-- ${config.PREFIX}img-download images
-- ${config.PREFIX}apk-download applications
-- ${config.PREFIX}tiktok-Tikotok search
-- ${config.PREFIX}fb-Facebook search
-- ${config.PREFIX}ig;Instagram Search
+⏬️ *Download Menu*:
+- 🎵 ${config.PREFIX}song-download : Download a song
+- 🎶 ${config.PREFIX}play-download : Download song by name
+- 🖼️ ${config.PREFIX}img-download : Download images
+- 📱 ${config.PREFIX}apk-download : Download applications
+- 🎬 ${config.PREFIX}tiktok : TikTok search
+- 📘 ${config.PREFIX}fb : Facebook search
+- 📸 ${config.PREFIX}ig : Instagram search
 
-FOR ALL BOT UPDATES FOLLOW
-
-https://whatsapp.com/channel/0029Vb5nSebFy722d2NEeU3C
+📰 *Channel*: ${channelName}  [View Channel]
 `;
 
-                    await socket.sendMessage(sender, {
-                        image: { url: config.IMAGE_PATH || 'https://files.catbox.moe/2ozipw.jpg' },
-                        caption: menuCaption.trim()
-                    });
-                    break;
-                }
-
+await socket.sendMessage(sender, {
+    image: { url: config.IMAGE_PATH || 'https://files.catbox.moe/yiibig.jpg' },
+    caption: menuCaption.trim(),
+    contextInfo: {
+        forwardingScore: 1,
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+            newsletterJid: channelJid,
+            newsletterName: channelName,
+            serverMessageId: -1
+        }
+    }
+});
                 case 'ping': {
                     const start = Date.now();
                     await socket.sendMessage(sender, { text: '🏓 Pong!' });
                     const latency = Date.now() - start;
                     await socket.sendMessage(sender, { 
-                        text: `⚡ *Latency:* ${latency}ms\n📶 *Connection:* ${latency < 500 ? 'Excellent' : latency < 1000 ? 'Good' : 'Poor'}\n\n> © *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ʙᴀɴᴅᴀʜᴇᴀʟɪ*`
+                        text: `⚡ *Latency:* ${latency}ms\n📶 *Connection:* ${latency < 500 ? 'Excellent' : latency < 1000 ? 'Good' : 'Poor'}\n\n> © *ᴘᴏᴡᴇʀᴇᴅ By Snowbird*`
                     });
                     break;
                 }
@@ -685,7 +692,7 @@ https://whatsapp.com/channel/0029Vb5nSebFy722d2NEeU3C
                     const seconds = Math.floor(uptime % 60);
                     
                     await socket.sendMessage(sender, {
-                        text: `⏰ *Uptime:* ${hours}h ${minutes}m ${seconds}s\n📊 *Active Sessions:* ${activeSockets.size}\n\n> © *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ʙᴀɴᴅᴀʑʜᴇᴀʟɪ*`
+                        text: `⏰ *Uptime:* ${hours}h ${minutes}m ${seconds}s\n📊 *Active Sessions:* ${activeSockets.size}\n\n> © *ᴘᴏᴡᴇʀᴇᴅ ʙʏ Snowbird*`
                     });
                     break;
                 }
@@ -889,8 +896,8 @@ case 'ig': {
 
                 case 'repo': {
                     await socket.sendMessage(sender, {
-                        image: { url: 'https://files.catbox.moe/2ozipw.jpg' },
-                        caption: `📦 *BANDAHEALI MINI BOT REPOSITORY*\n\n🔗 *GitHub:* https://github.com/Bandah-E-Ali/Edith-MD\n\n🌟 *Features:*\n• Fast & Reliable\n• Easy to Use\n• Multiple Sessions\n\n> © *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ʙᴀɴᴅᴀʜᴇᴀʟɪ*`
+                        image: { url: 'https://files.catbox.moe/yiibig.jpg' },
+                        caption: `📦 *CYBERDEVS MINI BOT REPOSITORY*\n\n🔗 *GitHub:* https://github.com/SNOWBIRD0074/Lady-Bella2\n\n🌟 *Features:*\n• Fast & Reliable\n• Easy to Use\n• Multiple Sessions\n\n> © *ᴘᴏᴡᴇʀᴇᴅ ʙʏ Snowbird*`
                     });
                     break;
                 }
@@ -900,7 +907,7 @@ case 'ig': {
                     
                     await socket.sendMessage(sender, {
                         image: { url: config.IMAGE_PATH },
-                        caption: confirmationMessage + '\n\n> © *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ʙᴀɴᴅᴀʜᴇᴀʟɪ*'
+                        caption: confirmationMessage + '\n\n> © *ᴘᴏᴡᴇʀᴇᴅ By Snowbird*'
                     });
                     break;
                 }
@@ -910,7 +917,7 @@ case 'ig': {
                     const sanitizedNumber = number.replace(/[^0-9]/g, '');
                     
                     await socket.sendMessage(sender, {
-                        text: '🗑️ Deleting your session...\n\n> © *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ʙᴀɴᴅᴀʜᴇᴀʟɪ*'
+                        text: '🗑️ Deleting your session...\n\n> © *ᴘᴏᴡᴇʀᴇᴅ ʙʏ Snowbird*'
                     });
                     
                     try {

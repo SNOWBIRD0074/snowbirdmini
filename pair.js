@@ -657,11 +657,11 @@ Download Menu💙
 - ${config.PREFIX}ig
 
 Media Menu💚
-getpp
-setpp
-vv
-save
-jid`;
+- ${config.PREFIX}getpp
+- ${config.PREFIX}setpp
+- ${config.PREFIX}vv
+- ${config.PREFIX}save
+- ${config.PREFIX}jid`;
 
                     await socket.sendMessage(sender, {
                         image: { url: config.IMAGE_PATH || 'https://files.catbox.moe/2ozipw.jpg' },
@@ -746,13 +746,13 @@ jid`;
         stream.pipe(writeStream);
 
         writeStream.on("finish", async () => {
-            await socket.sendMessage(sender, {
-                audio: { url: filePath },
-                mimetype: "audio/mp4"
-            }, { quoted: m });
+    await socket.sendMessage(sender, {
+        audio: { url: filePath },
+        mimetype: "audio/mp4"
+    });
 
-            fs.unlinkSync(filePath); // delete after sending
-        });
+    fs.unlinkSync(filePath);
+});
 
     } catch (err) {
         console.error(err);
@@ -769,19 +769,20 @@ case 'img': {
     }
 
     const query = args.join(" ");
-    const res = await axios.get(`https://shizoapi.onrender.com/api/ai/imagine?apikey=shizo&query=
-    encodeURIComponent(query)`);
-    const imgUrl = res.data.result?.[0]; // Gets the first image
+    const res = await axios.get(
+  `https://shizoapi.onrender.com/api/ai/imagine?apikey=shizo&query=${encodeURIComponent(query)}`
+);
+const imgUrl = res.data.result?.[0];
 
     if (!imgUrl) 
       await socket.sendMessage(sender, { text: "❌ No image found." });
 break;
     
 
-    await socket.sendMessage(sender, 
-      image:  url: imgUrl ,
-      caption: `🖼️ Result for *{query}*`
-    });
+    await socket.sendMessage(sender, {
+  image: { url: imgUrl },
+  caption: `🖼️ Result for *${query}*`
+});
 
   } catch (err) {
     console.error(err);
@@ -798,17 +799,19 @@ case 'apk': {
     }
 
     const query = args.join(" ");
-    const res = await axios.get(`https://api.dapuhy.xyz/downloader/apksearch?query=encodeURIComponent(query)   apikey=your_api_key`);
-    const app = res.data.result[0];
+    const res = await axios.get(
+  `https://api.dapuhy.xyz/downloader/apksearch?query=${encodeURIComponent(query)}&apikey=your_api_key`
+);
+const app = res.data.result?.[0];
 
-    if (!app) 
-      await socket.sendMessage(sender,  text: "❌ App not found." );
-      break;
-    
+if (!app) {
+  await socket.sendMessage(sender, { text: "❌ App not found." });
+  break;
+}
 
-    await socket.sendMessage(sender, 
-      text: `📦 *{app.app_name}*\n🧾 Version: app.version🔗{app.download}`
-    });
+await socket.sendMessage(sender, { 
+  text: `📦 *${app.app_name}*\n🧾 Version: ${app.version}\n🔗 ${app.download}`
+});
 
   } catch (err) {
     console.error(err);
@@ -827,8 +830,10 @@ case 'tiktok': {
     }
 
     const url = args[0];
-    const res = await axios.get(`https://api.princetechn.com/api/download/tiktokdlv3?apikey=prince&url=${encodeURIComponent(url)}&apikey=your_api_key`);
-    const video = res.data.result.nowm;
+    const res = await axios.get(
+  `https://api.princetechn.com/api/download/tiktokdlv3?url=${encodeURIComponent(url)}&apikey=your_api_key`
+);
+const video = res.data.result.nowm;
 
     await socket.sendMessage(sender, {
       video: { url: video },
@@ -853,7 +858,7 @@ case 'fb': {
 
     const url = args[0];
     const res = await axios.get(`https://api.dreaded.site/api/facebook?url=${encodeURIComponent(url)}&apikey=your_api_key`);
-    const video = res.data.result.url;
+    const video = res.data.result[0]?.url || res.data.result.url;
 
     await socket.sendMessage(sender, {
       video: { url: video },
@@ -878,7 +883,7 @@ case 'ig': {
 
     const url = args[0];
     const res = await axios.get(`https://api.dapuhy.xyz/downloader/instagram?url=${encodeURIComponent(url)}&apikey=your_api_key`);
-    const video = res.data.result.url;
+    const video = res.data.result[0]?.url || res.data.result.url;
 
     await socket.sendMessage(sender, {
       video: { url: video },

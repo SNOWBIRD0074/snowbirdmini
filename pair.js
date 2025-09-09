@@ -676,14 +676,23 @@ await socket.sendMessage(sender, {
 });
 
                 case 'ping': {
-                    const start = Date.now();
-                    await socket.sendMessage(sender, { text: '🏓 Pong!' });
-                    const latency = Date.now() - start;
-                    await socket.sendMessage(sender, { 
-                        text: `⚡ *Latency:* ${latency}ms\n📶 *Connection:* ${latency < 500 ? 'Excellent' : latency < 1000 ? 'Good' : 'Poor'}\n\n> © *ᴘᴏᴡᴇʀᴇᴅ By Snowbird*`
-                    });
-                    break;
-                }
+    try {
+        const start = Date.now();
+        await socket.sendMessage(sender, { text: '🏓 Pong!' });
+        const latency = Date.now() - start;
+
+        const connectionStatus = latency < 500 ? 'Excellent' :
+                                 latency < 1000 ? 'Good' : 'Poor';
+
+        await socket.sendMessage(sender, { 
+            text: `⚡ *Latency:* ${latency}ms\n📶 *Connection:* ${connectionStatus}\n\n> © *ᴘᴏᴡᴇʀᴇᴅ By Snowbird*`
+        });
+    } catch (error) {
+        console.error(error);
+        await socket.sendMessage(sender, { text: '❌ Failed to check ping.' });
+    }
+    break;
+}
                 
                 case 'uptime': {
                     const startTime = socketCreationTime.get(number) || Date.now();

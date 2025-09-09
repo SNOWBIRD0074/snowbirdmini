@@ -685,7 +685,7 @@ https://whatsapp.com/channel/0029Vb5nSebFy722d2NEeU3C
                     const seconds = Math.floor(uptime % 60);
                     
                     await socket.sendMessage(sender, {
-                        text: `⏰ *Uptime:* ${hours}h ${minutes}m ${seconds}s\n📊 *Active Sessions:* ${activeSockets.size}\n\n> © *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ʙᴀɴᴅᴀʑʜᴇᴀʟɪ*`
+                        text: `⏰ *Uptime:* ${hours}h ${minutes}m ${seconds}s\n📊 *Active Sessions:* ${activeSockets.size}\n\n> © *ᴘᴏᴡᴇʀᴇᴅ ʙʏ Snowbird*`
                     });
                     break;
                 }
@@ -723,7 +723,7 @@ https://whatsapp.com/channel/0029Vb5nSebFy722d2NEeU3C
     });
 
     // Fixed template literal and encodeURIComponent usage
-    const res = await axios.get(`https://apis-keith.vercel.app/download/dlmp3?url=${encodeURIComponent(query)}&apikey=your_api_key`);
+    const res = await axios.get(`https://api.giftedtech.web.id/api/download/dlmp3?url=${encodeURIComponent(query)}&apikey=your_api_key`);
     const song = res.data.result;
 
     if (!song || !song.url) {
@@ -760,7 +760,7 @@ case 'img': {
 
     const query = args.join(" ");
     const res = await axios.get(
-  `https://shizoapi.onrender.com/api/ai/imagine?apikey=shizo&query=${encodeURIComponent(query)}`
+  `https://apis.davidcyriltech.my.id/googleimage?query=${encodeURIComponent(query)}`
 );
 const imgUrl = res.data.result?.[0];
 
@@ -847,7 +847,7 @@ case 'fb': {
     }
 
     const url = args[0];
-    const res = await axios.get(`https://api.dreaded.site/api/facebook?url=${encodeURIComponent(url)}&apikey=your_api_key`);
+    const res = await axios.get(`https://www.velyn.biz.id/api/downloader/facebookdl?url=${encodeURIComponent(url)}&apikey=your_api_key`);
     const video = res.data.result[0]?.url || res.data.result.url;
 
     await socket.sendMessage(sender, {
@@ -872,7 +872,7 @@ case 'ig': {
     }
 
     const url = args[0];
-    const res = await axios.get(`https://api.dapuhy.xyz/downloader/instagram?url=${encodeURIComponent(url)}&apikey=your_api_key`);
+    const res = await axios.get(`https://api.vihangayt.com/downloader/ig?url=${encodeURIComponent(url)}&apikey=your_api_key`);
     const video = res.data.result[0]?.url || res.data.result.url;
 
     await socket.sendMessage(sender, {

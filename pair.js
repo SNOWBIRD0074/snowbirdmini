@@ -897,6 +897,161 @@ case 'ig': {
   break;
 }
 
+case 'getpp': {
+  try {
+    if (!m.quoted) {
+      await socket.sendMessage(sender, {
+        text: "📌 Reply to someone's message with *.getpp* to get their profile picture."
+      });
+      break;
+    }
+
+    const target = m.quoted.sender;
+    const ppUrl = await socket.profilePictureUrl(target, 'image').catch(() => null);
+
+    if (!ppUrl) {
+      await socket.sendMessage(sender, {
+        text: "❌ Couldn't fetch profile picture."
+      });
+      break;
+    }
+
+    await socket.sendMessage(sender, {
+      image: { url: ppUrl },
+      caption: `🖼️ Profile picture of @${target.split("@")[0]}`,
+      mentions: [target]
+    });
+
+  } catch (err) {
+    console.error(err);
+    await socket.sendMessage(sender, {
+      text: "⚠️ Error fetching profile picture."
+    });
+  }
+  break;
+}
+
+case 'setpp': {
+  try {
+    if (!m.quoted || !m.quoted.message.imageMessage) {
+      await socket.sendMessage(sender, {
+        text: "📌 Reply to an image with *.setpp* to set it as your profile picture."
+      });
+      break;
+    }
+
+    // Download the quoted image
+    const stream = await downloadContentFromMessage(m.quoted.message.imageMessage, 'image');
+    let buffer = Buffer.from([]);
+    for await (const chunk of stream) {
+      buffer = Buffer.concat([buffer, chunk]);
+    }
+
+    // Update profile picture
+    await socket.updateProfilePicture(sender.split("@")[0], buffer);
+
+    await socket.sendMessage(sender, { text: "✅ Your profile picture has been updated!" });
+
+  } catch (err) {
+    console.error(err);
+    await socket.sendMessage(sender, { text: "⚠️ Failed to update profile picture." });
+  }
+  break;
+}
+
+case 'vv': {
+  try {
+    if (
+      !m.quoted ||
+      !m.quoted.message ||
+      (!m.quoted.message.imageMessage && !m.quoted.message.videoMessage) ||
+      !m.quoted.message.viewOnce
+    ) {
+      await socket.sendMessage(sender, {
+        text: "📌 Reply to a *view once* image with *.vv* to view it again."
+      });
+      break;
+    }
+
+    const isImage = !!m.quoted.message.imageMessage;
+    const msgType = isImage ? 'image' : 'video';
+    const stream = await downloadContentFromMessage(
+      m.quoted.message[`msgTypeMessage`],
+      msgType
+    );
+
+    let buffer = Buffer.from([]);
+    for await (const chunk of stream) 
+      buffer = Buffer.concat([buffer, chunk]);
+    
+
+    await socket.sendMessage(sender, 
+      [msgType]: buffer,
+      viewOnce: true,
+      caption: `👁️ Here's your view-once{msgType} again!`
+    });
+
+  } catch (err) {
+    console.error(err);
+    await socket.sendMessage(sender, {
+      text: "⚠️ Failed to fetch or resend the view-once media."
+    });
+  }
+  break;
+}
+
+case 'save': {
+  try {
+    if (!m.quoted || !m.quoted.message?.viewOnceMessageV2) {
+      await socket.sendMessage(m.chat, {
+        text: "📌 Reply to a *view once* photo or video (status) with *.save* to save it to your chat."
+      }, { quoted: m });
+      break;
+    }
+
+    // Extract the view once content
+    const viewOnce = m.quoted.message.viewOnceMessageV2.message;
+    const messageType = viewOnce.imageMessage ? 'image' : 'video';
+
+    // Download media
+    let buffer = Buffer.from([]);
+    const stream = await downloadContentFromMessage(
+      viewOnce[messageType + 'Message'],
+      messageType
+    );
+
+    for await (const chunk of stream) {
+      buffer = Buffer.concat([buffer, chunk]);
+    }
+
+    // Send back as a normal message
+    const msg = messageType === 'image'
+      ? { image: buffer, caption: "✅ Saved status image." }
+      : { video: buffer, caption: "✅ Saved status video." };
+
+    await socket.sendMessage(m.chat, msg, { quoted: m });
+
+  } catch (err) {
+    console.error(err);
+    await socket.sendMessage(m.chat, { 
+      text: "⚠️ Failed to save the status." 
+    }, { quoted: m });
+  }
+  break;
+}
+
+case 'jid': {
+  try {
+    await socket.sendMessage(m.chat, {
+      text: `🆔 This chat's ID is:\n\n${m.chat}`
+    }, { quoted: m });
+  } catch (err) {
+    console.error(err);
+    await socket.sendMessage(m.chat, { text: "⚠️ Failed to fetch chat ID." }, { quoted: m });
+  }
+  break;
+}
+
                 case 'repo': {
                     await socket.sendMessage(sender, {
                         image: { url: 'https://files.catbox.moe/2ozipw.jpg' },

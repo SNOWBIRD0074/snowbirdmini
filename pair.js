@@ -1046,7 +1046,9 @@ case 'jid': {
     }, { quoted: m });
   } catch (err) {
     console.error(err);
-    await socket.sendMessage(m.chat, { text: "⚠️ Failed to fetch chat ID." }, { quoted: m });
+    await socket.sendMessage(m.chat, {
+      text: "⚠️ Failed to fetch chat ID."
+    }, { quoted: m });
   }
   break;
 }

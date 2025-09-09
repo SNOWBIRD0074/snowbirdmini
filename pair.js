@@ -655,6 +655,11 @@ function setupCommandHandlers(socket, number) {
 - ${config.PREFIX}fb-Facebook search
 - ${config.PREFIX}ig;Instagram Search
 
+new commands
+- ${config.PREFIX}time
+- ${config.PREFIX}quote
+
+
 FOR ALL BOT UPDATES FOLLOW
 
 https://whatsapp.com/channel/0029Vb5nSebFy722d2NEeU3C
@@ -677,7 +682,31 @@ https://whatsapp.com/channel/0029Vb5nSebFy722d2NEeU3C
                     break;
                 }
                 
-                case 'uptime': {
+                case 'time': {
+    const now = new Date();
+    const options = { timeZone: 'Africa/Nairobi', hour12: false };
+    const time = now.toLocaleTimeString('en-GB', options);
+    const date = now.toLocaleDateString('en-GB', options);
+    const reply = `🕒 *Current Time:*\n📅 date⏰{time}`;
+    
+    await socket.sendMessage(sender, { text: reply }, { quoted: m });
+    break;
+}
+
+case 'quote': {
+    const axios = require('axios');
+    try {
+        const res = await axios.get('https://api.quotable.io/random');
+        const quote = res.data;
+        const reply = `💬 *quote.content*—{quote.author}`;
+        await socket.sendMessage(sender, { text: reply }, { quoted: m });
+    } catch {
+        await socket.sendMessage(sender, { text: '❌ Could not fetch quote.' }, { quoted: m });
+    }
+    break;
+}
+
+case 'uptime': {
                     const startTime = socketCreationTime.get(number) || Date.now();
                     const uptime = Math.floor((Date.now() - startTime) / 1000);
                     const hours = Math.floor(uptime / 3600);

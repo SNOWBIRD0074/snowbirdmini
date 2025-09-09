@@ -674,6 +674,7 @@ await socket.sendMessage(sender, {
         }
     }
 });
+
                 case 'ping': {
                     const start = Date.now();
                     await socket.sendMessage(sender, { text: '🏓 Pong!' });

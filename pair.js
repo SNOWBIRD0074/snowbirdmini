@@ -774,8 +774,8 @@ case 'img': {
     const imgUrl = res.data.result?.[0]; // Gets the first image
 
     if (!imgUrl) 
-      await socket.sendMessage(sender,  text: "❌ No image found." );
-      break;
+      await socket.sendMessage(sender, { text: "❌ No image found." });
+break;
     
 
     await socket.sendMessage(sender, 

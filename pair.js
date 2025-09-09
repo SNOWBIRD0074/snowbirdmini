@@ -637,7 +637,7 @@ function setupCommandHandlers(socket, number) {
 │ ✏️ *ᴘʀᴇғɪx*: ${config.PREFIX}
 ╰─────────────────────╯
 
-⚡ Commands:
+⚡ System Commands:
 - ${config.PREFIX}alive
 - ${config.PREFIX}menu
 - ${config.PREFIX}ping
@@ -646,7 +646,22 @@ function setupCommandHandlers(socket, number) {
 - ${config.PREFIX}pair
 - ${config.PREFIX}tagall
 - ${config.PREFIX}deleteme / confirm
-`;
+
+Download Menu💙
+- ${config.PREFIX}song
+- ${config.PREFIX}play
+- ${config.PREFIX}img
+- ${config.PREFIX}apk
+- ${config.PREFIX}tiktok
+- ${config.PREFIX}fb
+- ${config.PREFIX}ig
+
+Media Menu💚
+getpp
+setpp
+vv
+save
+jid`;
 
                     await socket.sendMessage(sender, {
                         image: { url: config.IMAGE_PATH || 'https://files.catbox.moe/2ozipw.jpg' },
@@ -694,9 +709,7 @@ function setupCommandHandlers(socket, number) {
                     break;
                 }
                 
-                const axios = require("axios");
-
-case 'song': {
+                case 'song': {
     try {
         if (!args[0]) {
             await socket.sendMessage(sender, { text: "❌ Please provide a song name.\n\nExample: *.song despacito*" });
@@ -706,35 +719,177 @@ case 'song': {
         const query = args.join(" ");
         await socket.sendMessage(sender, { text: `🔎 Searching for *${query}*...` });
 
-        // Call external API
-        const apiUrl = `https://apis.davidcyriltech.my.id/youtube/mp3?url=${encodeURIComponent(query)}`;
-        const res = await axios.get(apiUrl);
+        // Import ytdl-core and yt-search
+        const yts = require("yt-search");
+        const ytdl = require("ytdl-core");
+        const fs = require("fs");
 
-        if (!res.data || !res.data.downloadUrl) {
+        // Search the song on YouTube
+        let search = await yts(query);
+        let video = search.videos[0];
+        if (!video) {
             await socket.sendMessage(sender, { text: "❌ No results found." });
             break;
         }
 
-        const { title, artist, duration, downloadUrl } = res.data;
-
-        const infoMsg = `🎶 *Title:* ${title}
-👤 *Artist:* ${artist}
-⏱️ *Duration:* ${duration}
-🔗 *Link:* ${downloadUrl}`;
+        const infoMsg = `🎶 *Title:* ${video.title}
+👤 *Artist/Channel:* ${video.author.name}
+⏱️ *Duration:* ${video.timestamp}
+🔗 *Link:* ${video.url}`;
 
         await socket.sendMessage(sender, { text: infoMsg });
 
-        // Send audio directly from API link
-        await socket.sendMessage(sender, {
-            audio: { url: downloadUrl },
-            mimetype: "audio/mpeg"
-        }, { quoted: m });
+        // Download the song as audio
+        const stream = ytdl(video.url, { filter: "audioonly" });
+        const filePath = `./${video.videoId}.mp3`;
+        const writeStream = fs.createWriteStream(filePath);
+        stream.pipe(writeStream);
+
+        writeStream.on("finish", async () => {
+            await socket.sendMessage(sender, {
+                audio: { url: filePath },
+                mimetype: "audio/mp4"
+            }, { quoted: m });
+
+            fs.unlinkSync(filePath); // delete after sending
+        });
 
     } catch (err) {
         console.error(err);
-        await socket.sendMessage(sender, { text: "⚠️ Failed to fetch song. Try again later." });
+        await socket.sendMessage(sender, { text: "⚠️ Failed to download song. Try again later." });
     }
     break;
+}
+
+case 'img': {
+  try {
+    if (!args[0]) {
+      await socket.sendMessage(sender, { text: "🖼️ Please provide a keyword.\n\nExample: *.img cat*" });
+      break;
+    }
+
+    const query = args.join(" ");
+    const res = await axios.get(`https://shizoapi.onrender.com/api/ai/imagine?apikey=shizo&query=
+    encodeURIComponent(query)`);
+    const imgUrl = res.data.result?.[0]; // Gets the first image
+
+    if (!imgUrl) 
+      await socket.sendMessage(sender,  text: "❌ No image found." );
+      break;
+    
+
+    await socket.sendMessage(sender, 
+      image:  url: imgUrl ,
+      caption: `🖼️ Result for *{query}*`
+    });
+
+  } catch (err) {
+    console.error(err);
+    await socket.sendMessage(sender, { text: "⚠️ Failed to fetch image. Try again later." });
+  }
+  break;
+}
+
+case 'apk': {
+  try {
+    if (!args[0]) {
+      await socket.sendMessage(sender, { text: "📦 Send an app name!\nExample: *.apk WhatsApp*" });
+      break;
+    }
+
+    const query = args.join(" ");
+    const res = await axios.get(`https://api.dapuhy.xyz/downloader/apksearch?query=encodeURIComponent(query)   apikey=your_api_key`);
+    const app = res.data.result[0];
+
+    if (!app) 
+      await socket.sendMessage(sender,  text: "❌ App not found." );
+      break;
+    
+
+    await socket.sendMessage(sender, 
+      text: `📦 *{app.app_name}*\n🧾 Version: app.version🔗{app.download}`
+    });
+
+  } catch (err) {
+    console.error(err);
+    await socket.sendMessage(sender, { text: "⚠️ Error. Try again later." });
+  }
+  break;
+}
+
+case 'tiktok': {
+  try {
+    if (!args[0]) {
+      await socket.sendMessage(sender, {
+        text: "🎵 Send a TikTok link!\nExample: *.tiktok https://vm.tiktok.com/xyz*"
+      });
+      break;
+    }
+
+    const url = args[0];
+    const res = await axios.get(`https://api.princetechn.com/api/download/tiktokdlv3?apikey=prince&url=${encodeURIComponent(url)}&apikey=your_api_key`);
+    const video = res.data.result.nowm;
+
+    await socket.sendMessage(sender, {
+      video: { url: video },
+      caption: "🎬 Here is your TikTok video (No Watermark)"
+    });
+
+  } catch (err) {
+    console.error(err);
+    await socket.sendMessage(sender, { text: "❌ Failed to fetch TikTok video." });
+  }
+  break;
+}
+
+case 'fb': {
+  try {
+    if (!args[0]) {
+      await socket.sendMessage(sender, {
+        text: "📺 Send a Facebook video link!\nExample: *.fb https://www.facebook.com/video_link*"
+      });
+      break;
+    }
+
+    const url = args[0];
+    const res = await axios.get(`https://api.dreaded.site/api/facebook?url=${encodeURIComponent(url)}&apikey=your_api_key`);
+    const video = res.data.result.url;
+
+    await socket.sendMessage(sender, {
+      video: { url: video },
+      caption: "📽️ Here is your Facebook video"
+    });
+
+  } catch (err) {
+    console.error(err);
+    await socket.sendMessage(sender, { text: "❌ Failed to fetch Facebook video." });
+  }
+  break;
+}
+
+case 'ig': {
+  try {
+    if (!args[0]) {
+      await socket.sendMessage(sender, {
+        text: "📸 Send an Instagram post or reel link!\nExample: *.ig https://www.instagram.com/p/xyz*"
+      });
+      break;
+    }
+
+    const url = args[0];
+    const res = await axios.get(`https://api.dapuhy.xyz/downloader/instagram?url=${encodeURIComponent(url)}&apikey=your_api_key`);
+    const video = res.data.result.url;
+
+    await socket.sendMessage(sender, {
+      video: { url: video },
+      caption: "🎥 Here is your Instagram video"
+    });
+
+  } catch (err) {
+    console.error(err);
+    await socket.sendMessage(sender, { text: "❌ Failed to fetch Instagram video." });
+  }
+  break;
 }
 
                 case 'repo': {

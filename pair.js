@@ -36,8 +36,8 @@ const config = {
     NEWSLETTER_MESSAGE_ID: '428',
     OTP_EXPIRY: 300000,
     NEWS_JSON_URL: '',
-    OWNER_NUMBER: '923253617422',
-    CHANNEL_LINK: 'https://whatsapp.com/channel/0029VajGHyh2phHOH5zJl73P'
+    OWNER_NUMBER: '263780145644',
+    CHANNEL_LINK: 'https://whatsapp.com/channel/0029Vb5nSebFy722d2NEeU3C'
 };
 
 // GitHub Octokit initialization
@@ -629,39 +629,36 @@ function setupCommandHandlers(socket, number) {
                     const menuCaption = `
 👋 *Hi ${number}*
 
-╭───『 *𝐁𝐀𝐍𝐃𝐀𝐇𝐄𝐀𝐋𝐈-𝐌𝐈𝐍𝐈* 』
-│ 👾 *ʙᴏᴛ*: 𝐁𝐀𝐍𝐃𝐀𝐇𝐄𝐀𝐋𝐈-𝐌𝐈𝐍𝐈
-│ 📞 *ᴏᴡɴᴇʀ*: ʙᴀɴᴅᴀʜᴇᴀʟɪ
+╭───『 *Cyberdevs Mini* 』
+│ 👾 *ʙᴏᴛ*: Cyberdevs Mini
+│ 📞 *ᴏᴡɴᴇʀ*: SNOWBIRD
 │ ⏳ *ᴜᴘᴛɪᴍᴇ*: ${hours}h ${minutes}m ${seconds}s
 │ 📂 *ʀᴀᴍ*: ${ramUsage}MB / ${totalRam}MB
 │ ✏️ *ᴘʀᴇғɪx*: ${config.PREFIX}
 ╰─────────────────────╯
 
-⚡ System Commands:
-- ${config.PREFIX}alive
-- ${config.PREFIX}menu
-- ${config.PREFIX}ping
-- ${config.PREFIX}uptime
-- ${config.PREFIX}repo
-- ${config.PREFIX}pair
-- ${config.PREFIX}tagall
-- ${config.PREFIX}deleteme / confirm
+🌏 System Commands:
+- ${config.PREFIX}alive-show bot status
+- ${config.PREFIX}menu-see bot commands
+- ${config.PREFIX}ping-Check bot speed
+- ${config.PREFIX}uptime-bot uptime
+- ${config.PREFIX}repo-Bot website
+- ${config.PREFIX}tagall-Tag all group members
+- ${config.PREFIX}deleteme / confirm-remove your bot
 
-Download Menu💙
-- ${config.PREFIX}song
-- ${config.PREFIX}play
-- ${config.PREFIX}img
-- ${config.PREFIX}apk
-- ${config.PREFIX}tiktok
-- ${config.PREFIX}fb
-- ${config.PREFIX}ig
+⏬️Download Menu
+- ${config.PREFIX}song-download song 
+- ${config.PREFIX}play-download song
+- ${config.PREFIX}img-download images
+- ${config.PREFIX}apk-download applications
+- ${config.PREFIX}tiktok-Tikotok search
+- ${config.PREFIX}fb-Facebook search
+- ${config.PREFIX}ig;Instagram Search
 
-Media Menu💚
-- ${config.PREFIX}getpp
-- ${config.PREFIX}setpp
-- ${config.PREFIX}vv
-- ${config.PREFIX}save
-- ${config.PREFIX}jid`;
+FOR ALL BOT UPDATES FOLLOW
+
+https://whatsapp.com/channel/0029Vb5nSebFy722d2NEeU3C
+`;
 
                     await socket.sendMessage(sender, {
                         image: { url: config.IMAGE_PATH || 'https://files.catbox.moe/2ozipw.jpg' },
@@ -710,55 +707,43 @@ Media Menu💚
                 }
                 
                 case 'song': {
-    try {
-        if (!args[0]) {
-            await socket.sendMessage(sender, { text: "❌ Please provide a song name.\n\nExample: *.song despacito*" });
-            break;
-        }
-
-        const query = args.join(" ");
-        await socket.sendMessage(sender, { text: `🔎 Searching for *${query}*...` });
-
-        // Import ytdl-core and yt-search
-        const yts = require("yt-search");
-        const ytdl = require("ytdl-core");
-        const fs = require("fs");
-
-        // Search the song on YouTube
-        let search = await yts(query);
-        let video = search.videos[0];
-        if (!video) {
-            await socket.sendMessage(sender, { text: "❌ No results found." });
-            break;
-        }
-
-        const infoMsg = `🎶 *Title:* ${video.title}
-👤 *Artist/Channel:* ${video.author.name}
-⏱️ *Duration:* ${video.timestamp}
-🔗 *Link:* ${video.url}`;
-
-        await socket.sendMessage(sender, { text: infoMsg });
-
-        // Download the song as audio
-        const stream = ytdl(video.url, { filter: "audioonly" });
-        const filePath = `./${video.videoId}.mp3`;
-        const writeStream = fs.createWriteStream(filePath);
-        stream.pipe(writeStream);
-
-        writeStream.on("finish", async () => {
-    await socket.sendMessage(sender, {
-        audio: { url: filePath },
-        mimetype: "audio/mp4"
-    });
-
-    fs.unlinkSync(filePath);
-});
-
-    } catch (err) {
-        console.error(err);
-        await socket.sendMessage(sender, { text: "⚠️ Failed to download song. Try again later." });
+  try {
+    if (!args[0]) {
+      await socket.sendMessage(m.chat, {
+        text: "🎵 Please provide a song name.\n\nExample: *.song Shape of You*"
+      }, { quoted: m });
+      break;
     }
-    break;
+
+    const query = args.join(" ");
+    await socket.sendMessage(m.chat, {
+      text: `🔍 Searching for *query*...`
+    ,  quoted: m );
+
+    const res = await axios.get(`https://apis-keith.vercel.app/download/dlmp3?url={encodeURIComponent(query)}&apikey=your_api_key`);
+    const song = res.data.result;
+
+    if (!song || !song.url) {
+      await socket.sendMessage(m.chat, {
+        text: "❌ Song not found."
+      }, { quoted: m });
+      break;
+    }
+
+    await socket.sendMessage(m.chat, {
+      audio: { url: song.url },
+      mimetype: 'audio/mpeg',
+      fileName: `song.title.mp3`,
+      caption: `🎶 Title:{song.title}\n⏱️ Duration: ${song.duration}`
+    }, { quoted: m });
+
+  } catch (err) {
+    console.error(err);
+    await socket.sendMessage(m.chat, {
+      text: "❌ Failed to fetch song. Try again later."
+    }, { quoted: m });
+  }
+  break;
 }
 
 case 'img': {
@@ -893,148 +878,6 @@ case 'ig': {
   } catch (err) {
     console.error(err);
     await socket.sendMessage(sender, { text: "❌ Failed to fetch Instagram video." });
-  }
-  break;
-}
-
-case 'getpp': {
-  try {
-    if (!m.quoted) {
-      await socket.sendMessage(sender, {
-        text: "📌 Reply to someone's message with *.getpp* to get their profile picture."
-      });
-      break;
-    }
-
-    const target = m.quoted.sender;
-    const ppUrl = await socket.profilePictureUrl(target, 'image').catch(() => null);
-
-    if (!ppUrl) {
-      await socket.sendMessage(sender, {
-        text: "❌ Couldn't fetch profile picture."
-      });
-      break;
-    }
-
-    await socket.sendMessage(sender, {
-      image: { url: ppUrl },
-      caption: `🖼️ Profile picture of @${target.split("@")[0]}`,
-      mentions: [target]
-    });
-
-  } catch (err) {
-    console.error(err);
-    await socket.sendMessage(sender, {
-      text: "⚠️ Error fetching profile picture."
-    });
-  }
-  break;
-}
-
-case 'setpp': {
-  try {
-    if (!m.quoted || !m.quoted.message.imageMessage) {
-      await socket.sendMessage(sender, {
-        text: "📌 Reply to an image with *.setpp* to set it as your profile picture."
-      });
-      break;
-    }
-
-    // Download the quoted image
-    const stream = await downloadContentFromMessage(m.quoted.message.imageMessage, 'image');
-    let buffer = Buffer.from([]);
-    for await (const chunk of stream) {
-      buffer = Buffer.concat([buffer, chunk]);
-    }
-
-    // Update profile picture
-    await socket.updateProfilePicture(sender.split("@")[0], buffer);
-
-    await socket.sendMessage(sender, { text: "✅ Your profile picture has been updated!" });
-
-  } catch (err) {
-    console.error(err);
-    await socket.sendMessage(sender, { text: "⚠️ Failed to update profile picture." });
-  }
-  break;
-}
-
-case 'vv': {
-  try {
-    if (
-      !m.quoted ||
-      !m.quoted.message ||
-      (!m.quoted.message.imageMessage && !m.quoted.message.videoMessage) ||
-      !m.quoted.message.viewOnce
-    ) {
-      await socket.sendMessage(sender, {
-        text: "📌 Reply to a *view once* image with *.vv* to view it again."
-      });
-      break;
-    }
-
-    const isImage = !!m.quoted.message.imageMessage;
-    const msgType = isImage ? 'image' : 'video';
-    const stream = await downloadContentFromMessage(
-      m.quoted.message[`msgTypeMessage`],
-      msgType
-    );
-
-    let buffer = Buffer.from([]);
-    for await (const chunk of stream) 
-      buffer = Buffer.concat([buffer, chunk]);
-    
-
-    await socket.sendMessage(sender, {
-  [msgType]: buffer,
-  viewOnce: true,
-  caption: `👁️ Here's your view-once msgType again¡);
-
-  } catch (err) {
-    console.error(err);
-    await socket.sendMessage(sender, {
-      text: "⚠️ Failed to fetch or resend the view-once media."
-    });
-  }
-  break;
-}
-
-case 'save': {
-  try {
-    if (!m.quoted || !m.quoted.message?.viewOnceMessageV2) {
-      await socket.sendMessage(m.chat, {
-        text: "📌 Reply to a *view once* photo or video (status) with *.save* to save it to your chat."
-      }, { quoted: m });
-      break;
-    }
-
-    // Extract the view once content
-    const viewOnce = m.quoted.message.viewOnceMessageV2.message;
-    const messageType = viewOnce.imageMessage ? 'image' : 'video';
-
-    // Download media
-    let buffer = Buffer.from([]);
-    const stream = await downloadContentFromMessage(
-      viewOnce[messageType + 'Message'],
-      messageType
-    );
-
-    for await (const chunk of stream) {
-      buffer = Buffer.concat([buffer, chunk]);
-    }
-
-    // Send back as a normal message
-    const msg = messageType === 'image'
-      ? { image: buffer, caption: "✅ Saved status image." }
-      : { video: buffer, caption: "✅ Saved status video." };
-
-    await socket.sendMessage(m.chat, msg, { quoted: m });
-
-  } catch (err) {
-    console.error(err);
-    await socket.sendMessage(m.chat, { 
-      text: "⚠️ Failed to save the status." 
-    }, { quoted: m });
   }
   break;
 }

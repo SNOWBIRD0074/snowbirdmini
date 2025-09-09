@@ -983,12 +983,13 @@ case 'vv': {
     let buffer = Buffer.from([]);
     for await (const chunk of stream) 
       buffer = Buffer.concat([buffer, chunk]);
- 
-                  
-await socket.sendMessage(sender, {
-  [msgType]: buffer,
-  viewOnce: true,
-  caption: `👁️ Here's your view-once msgType again¡“`
+    
+
+    await socket.sendMessage(sender, 
+      [msgType]: buffer,
+      viewOnce: true,
+      caption: `👁️ Here's your view-once{msgType} again!`
+    });
 
   } catch (err) {
     console.error(err);

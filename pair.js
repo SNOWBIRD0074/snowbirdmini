@@ -1039,20 +1039,6 @@ case 'save': {
   break;
 }
 
-case 'jid': {
-  try {
-    await socket.sendMessage(m.chat, {
-      text: `🆔 This chat's ID is:\n\n${m.chat}`
-    }, { quoted: m });
-  } catch (err) {
-    console.error(err);
-    await socket.sendMessage(m.chat, {
-      text: "⚠️ Failed to fetch chat ID."
-    }, { quoted: m });
-  }
-  break;
-}
-
                 case 'repo': {
                     await socket.sendMessage(sender, {
                         image: { url: 'https://files.catbox.moe/2ozipw.jpg' },

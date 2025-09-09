@@ -856,6 +856,7 @@ case 'tiktok': {
 break;
 }
 
+case: 'facebook': 
 case 'fb': {
   try {
     if (!args[0]) {

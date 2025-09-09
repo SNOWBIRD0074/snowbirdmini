@@ -710,38 +710,43 @@ https://whatsapp.com/channel/0029Vb5nSebFy722d2NEeU3C
   try {
     if (!args[0]) {
       await socket.sendMessage(m.chat, {
-        text: "🎵 Please provide a song name.\n\nExample: *.song Shape of You*"
-      }, { quoted: m });
+        text: "🎵 Please provide a song name.\n\nExample: *.song Shape of You*",
+        quoted: m
+      });
       break;
     }
 
     const query = args.join(" ");
     await socket.sendMessage(m.chat, {
-      text: `🔍 Searching for *query*...`
-    ,  quoted: m );
+      text: `🔍 Searching for *${query}*...`,
+      quoted: m
+    });
 
-    const res = await axios.get(`https://apis-keith.vercel.app/download/dlmp3?url={encodeURIComponent(query)}&apikey=your_api_key`);
+    // Fixed template literal and encodeURIComponent usage
+    const res = await axios.get(`https://apis-keith.vercel.app/download/dlmp3?url=${encodeURIComponent(query)}&apikey=your_api_key`);
     const song = res.data.result;
 
     if (!song || !song.url) {
       await socket.sendMessage(m.chat, {
-        text: "❌ Song not found."
-      }, { quoted: m });
+        text: "❌ Song not found.",
+        quoted: m
+      });
       break;
     }
 
     await socket.sendMessage(m.chat, {
       audio: { url: song.url },
       mimetype: 'audio/mpeg',
-      fileName: `song.title.mp3`,
-      caption: `🎶 Title:{song.title}\n⏱️ Duration: ${song.duration}`
+      fileName: `${song.title}.mp3`, // fixed template literal
+      caption: `🎶 Title: ${song.title}\n⏱️ Duration: ${song.duration}`
     }, { quoted: m });
 
   } catch (err) {
     console.error(err);
     await socket.sendMessage(m.chat, {
-      text: "❌ Failed to fetch song. Try again later."
-    }, { quoted: m });
+      text: "❌ Failed to fetch song. Try again later.",
+      quoted: m
+    });
   }
   break;
 }

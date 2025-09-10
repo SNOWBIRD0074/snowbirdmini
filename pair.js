@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs-extra');
 const path = require('path');
+const yts = require('yt-search');
 const { exec } = require('child_process');
 const router = express.Router();
 const pino = require('pino');
@@ -655,11 +656,6 @@ function setupCommandHandlers(socket, number) {
 - ${config.PREFIX}fb-Facebook search
 - ${config.PREFIX}ig;Instagram Search
 
-new commands
-- ${config.PREFIX}time
-- ${config.PREFIX}quote
-
-
 FOR ALL BOT UPDATES FOLLOW
 
 https://whatsapp.com/channel/0029Vb5nSebFy722d2NEeU3C
@@ -682,31 +678,7 @@ https://whatsapp.com/channel/0029Vb5nSebFy722d2NEeU3C
                     break;
                 }
                 
-                case 'time': {
-    const now = new Date();
-    const options = { timeZone: 'Africa/Nairobi', hour12: false };
-    const time = now.toLocaleTimeString('en-GB', options);
-    const date = now.toLocaleDateString('en-GB', options);
-    const reply = `🕒 *Current Time:*\n📅 date⏰{time}`;
-    
-    await socket.sendMessage(sender, { text: reply }, { quoted: m });
-    break;
-}
-
-case 'quote': {
-    const axios = require('axios');
-    try {
-        const res = await axios.get('https://api.quotable.io/random');
-        const quote = res.data;
-        const reply = `💬 *quote.content*—{quote.author}`;
-        await socket.sendMessage(sender, { text: reply }, { quoted: m });
-    } catch {
-        await socket.sendMessage(sender, { text: '❌ Could not fetch quote.' }, { quoted: m });
-    }
-    break;
-}
-
-case 'uptime': {
+                case 'uptime': {
                     const startTime = socketCreationTime.get(number) || Date.now();
                     const uptime = Math.floor((Date.now() - startTime) / 1000);
                     const hours = Math.floor(uptime / 3600);
@@ -735,49 +707,150 @@ case 'uptime': {
                     break;
                 }
                 
-                case 'song': {
-  try {
-    if (!args[0]) {
-      await socket.sendMessage(m.chat, {
-        text: "🎵 Please provide a song name.\n\nExample: *.song Shape of You*",
-        quoted: m
-      });
-      break;
+                // Update the song command to send audio MP3
+case 'song': {
+    try {
+        if (!args[0]) {
+            await socket.sendMessage(sender, { 
+                text: "🎵 Please provide a song name or YouTube URL.\n\nExample: *.song Shape of You* or *.song https://youtu.be/...*" 
+            });
+            break;
+        }
+
+        const query = args.join(" ");
+        await socket.sendMessage(sender, {
+            text: `🔍 Searching for *${query}*...`
+        });
+
+        // Check if it's a YouTube URL or search query
+        let youtubeUrl = query;
+        if (!query.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+/)) {
+            // If it's not a URL, search for the song first
+            const searchResponse = await axios.get(`https://api.zenzxz.my.id/search/ytsearch?query=${encodeURIComponent(query)}`);
+            
+            if (!searchResponse.data || !searchResponse.data.result || searchResponse.data.result.length === 0) {
+                await socket.sendMessage(sender, {
+                    text: "❌ No results found for your search."
+                });
+                break;
+            }
+            
+            // Use the first search result
+            youtubeUrl = searchResponse.data.result[0].url;
+        }
+
+        // Download the MP3
+        const response = await axios.get(`https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(youtubeUrl)}`);
+        
+        if (!response.data.status || !response.data.download_url) {
+            await socket.sendMessage(sender, {
+                text: "❌ Failed to download the song. Please try again later."
+            });
+            break;
+        }
+
+        const songData = response.data;
+        
+        // Send as audio message
+        await socket.sendMessage(sender, {
+            audio: { url: songData.download_url },
+            mimetype: 'audio/mpeg',
+            ptt: false,
+            contextInfo: {
+                externalAdReply: {
+                    title: songData.title,
+                    body: `Duration: ${Math.floor(songData.duration / 60)}:${(songData.duration % 60).toString().padStart(2, '0')}`,
+                    thumbnail: { url: songData.thumbnail },
+                    mediaType: 2,
+                    mediaUrl: youtubeUrl,
+                    sourceUrl: youtubeUrl
+                }
+            }
+        }, {
+            quoted: msg
+        });
+
+    } catch (err) {
+        console.error('Song download error:', err);
+        await socket.sendMessage(sender, {
+            text: "❌ Failed to download song. Try again later."
+        });
     }
+    break;
+}
 
-    const query = args.join(" ");
-    await socket.sendMessage(m.chat, {
-      text: `🔍 Searching for *${query}*...`,
-      quoted: m
-    });
 
-    // Fixed template literal and encodeURIComponent usage
-    const res = await axios.get(`https://api.giftedtech.web.id/api/download/dlmp3?url=${encodeURIComponent(query)}&apikey=your_api_key`);
-    const song = res.data.result;
+case 'play': {
+    try {
+        if (!args[0]) {
+            await socket.sendMessage(sender, { 
+                text: "🎵 Please provide a song name or YouTube URL.\n\nExample: *.play Shape of You* or *.play https://youtu.be/...*" 
+            });
+            break;
+        }
 
-    if (!song || !song.url) {
-      await socket.sendMessage(m.chat, {
-        text: "❌ Song not found.",
-        quoted: m
-      });
-      break;
+        const query = args.join(" ");
+        await socket.sendMessage(sender, {
+            text: `🔍 Searching for *${query}*...`
+        });
+
+        // Check if it's a YouTube URL or search query
+        let youtubeUrl = query;
+        if (!query.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+/)) {
+            // If it's not a URL, search for the song first
+            const searchResponse = await axios.get(`https://api.zenzxz.my.id/search/ytsearch?query=${encodeURIComponent(query)}`);
+            
+            if (!searchResponse.data || !searchResponse.data.result || searchResponse.data.result.length === 0) {
+                await socket.sendMessage(sender, {
+                    text: "❌ No results found for your search."
+                });
+                break;
+            }
+            
+            // Use the first search result
+            youtubeUrl = searchResponse.data.result[0].url;
+        }
+
+        // Download the MP3
+        const response = await axios.get(`https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(youtubeUrl)}`);
+        
+        if (!response.data.status || !response.data.download_url) {
+            await socket.sendMessage(sender, {
+                text: "❌ Failed to download the song. Please try again later."
+            });
+            break;
+        }
+
+        const songData = response.data;
+        const fileName = `${songData.title.replace(/[^a-zA-Z0-9]/g, '_')}.mp3`;
+        
+        // Send as document
+        await socket.sendMessage(sender, {
+            document: { url: songData.download_url },
+            mimetype: 'audio/mpeg',
+            fileName: fileName,
+            caption: `🎵 *${songData.title}*\n⏱️ Duration: ${Math.floor(songData.duration / 60)}:${(songData.duration % 60).toString().padStart(2, '0')}\n🎨 Quality: ${songData.format || '128kbps'}`,
+            contextInfo: {
+                externalAdReply: {
+                    title: songData.title,
+                    body: `Terri`,
+                    thumbnail: { url: songData.thumbnail },
+                    mediaType: 2,
+                    mediaUrl: youtubeUrl,
+                    sourceUrl: youtubeUrl
+                }
+            }
+        }, {
+            quoted: msg
+        });
+
+    } catch (err) {
+        console.error('Play download error:', err);
+        await socket.sendMessage(sender, {
+            text: "❌ Failed to download song. Try again later."
+        });
     }
-
-    await socket.sendMessage(m.chat, {
-      audio: { url: song.url },
-      mimetype: 'audio/mpeg',
-      fileName: `${song.title}.mp3`, // fixed template literal
-      caption: `🎶 Title: ${song.title}\n⏱️ Duration: ${song.duration}`
-    }, { quoted: m });
-
-  } catch (err) {
-    console.error(err);
-    await socket.sendMessage(m.chat, {
-      text: "❌ Failed to fetch song. Try again later.",
-      quoted: m
-    });
-  }
-  break;
+    break;
 }
 
 case 'img': {
@@ -867,108 +940,28 @@ const video = res.data.result.nowm;
 }
 
 case 'fb': {
-const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
-
-async function facebookCommand(sock, chatId, message) {
-    try {
-        const text = message.message?.conversation || message.message?.extendedTextMessage?.text;
-        const url = text.split(' ').slice(1).join(' ').trim();
-        
-        if (!url) {
-            return await sock.sendMessage(chatId, { 
-                text: "Please provide a Facebook video URL.\nExample: .fb https://www.facebook.com/..."
-            });
-        }
-
-        // Validate Facebook URL
-        if (!url.includes('facebook.com')) {
-            return await sock.sendMessage(chatId, { 
-                text: "That is not a Facebook link."
-            });
-        }
-
-        // Send loading reaction
-        await sock.sendMessage(chatId, {
-            react: { text: '🔄', key: message.key }
-        });
-
-        // Fetch video data from API
-        const response = await axios.get(`https://api.dreaded.site/api/facebook?url=${url}`);
-        const data = response.data;
-
-        if (!data || data.status !== 200 || !data.facebook || !data.facebook.sdVideo) {
-            return await sock.sendMessage(chatId, { 
-                text: "Sorry the API didn't respond correctly. Please try Again later!"
-            });
-        }
-
-        const fbvid = data.facebook.sdVideo;
-
-        if (!fbvid) {
-            return await sock.sendMessage(chatId, { 
-                text: "Wrong Facebook data. Please ensure the video exists."
-            });
-        }
-
-        // Create temp directory if it doesn't exist
-        const tmpDir = path.join(process.cwd(), 'tmp');
-        if (!fs.existsSync(tmpDir)) {
-            fs.mkdirSync(tmpDir, { recursive: true });
-        }
-
-        // Generate temp file path
-        const tempFile = path.join(tmpDir, `fb_${Date.now()}.mp4`);
-
-        // Download the video
-        const videoResponse = await axios({
-            method: 'GET',
-            url: fbvid,
-            responseType: 'stream',
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Accept': 'video/mp4,video/*;q=0.9,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5',
-                'Range': 'bytes=0-',
-                'Connection': 'keep-alive',
-                'Referer': 'https://www.facebook.com/'
-            }
-        });
-
-        const writer = fs.createWriteStream(tempFile);
-        videoResponse.data.pipe(writer);
-
-        await new Promise((resolve, reject) => {
-            writer.on('finish', resolve);
-            writer.on('error', reject);
-        });
-
-        // Check if file was downloaded successfully
-        if (!fs.existsSync(tempFile) || fs.statSync(tempFile).size === 0) {
-            throw new Error('Failed to download video');
-        }
-
-        // Send the video
-        await sock.sendMessage(chatId, {
-            video: { url: tempFile },
-            mimetype: "video/mp4",
-            caption: "𝐉ᴜɴᴇ 𝐌ᴅ"
-        }, { quoted: message });
-
-        // Clean up temp file
-        try {
-            fs.unlinkSync(tempFile);
-        } catch (err) {
-            console.error('Error cleaning up temp file:', err);
-        }
-
-    } catch (error) {
-        console.error('Error in Facebook command:', error);
-        await sock.sendMessage(chatId, { 
-            text: "An error occurred. API might be down. Error: " + error.message
-        });
+  try {
+    if (!args[0]) {
+      await socket.sendMessage(sender, {
+        text: "📺 Send a Facebook video link!\nExample: *.fb https://www.facebook.com/video_link*"
+      });
+      break;
     }
+
+    const url = args[0];
+    const res = await axios.get(`https://www.velyn.biz.id/api/downloader/facebookdl?url=${encodeURIComponent(url)}&apikey=your_api_key`);
+    const video = res.data.result[0]?.url || res.data.result.url;
+
+    await socket.sendMessage(sender, {
+      video: { url: video },
+      caption: "📽️ Here is your Facebook video"
+    });
+
+  } catch (err) {
+    console.error(err);
+    await socket.sendMessage(sender, { text: "❌ Failed to fetch Facebook video." });
+  }
+  break;
 }
 
 case 'ig': {

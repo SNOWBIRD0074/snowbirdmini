@@ -707,12 +707,12 @@ https://whatsapp.com/channel/0029Vb5nSebFy722d2NEeU3C
                     break;
                 }
                 
-                // Update the song command to send audio MP3
+             // Update the song command to use yt-search for searching
 case 'song': {
     try {
         if (!args[0]) {
             await socket.sendMessage(sender, { 
-                text: "🎵 Please provide a song name or YouTube URL.\n\nExample: *.song Shape of You* or *.song https://youtu.be/...*" 
+                text: "🎵 Please provide a song name.\n\nExample: *.song Shape of You*" 
             });
             break;
         }
@@ -722,24 +722,21 @@ case 'song': {
             text: `🔍 Searching for *${query}*...`
         });
 
-        // Check if it's a YouTube URL or search query
-        let youtubeUrl = query;
-        if (!query.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+/)) {
-            // If it's not a URL, search for the song first
-            const searchResponse = await axios.get(`https://api.zenzxz.my.id/search/ytsearch?query=${encodeURIComponent(query)}`);
-            
-            if (!searchResponse.data || !searchResponse.data.result || searchResponse.data.result.length === 0) {
-                await socket.sendMessage(sender, {
-                    text: "❌ No results found for your search."
-                });
-                break;
-            }
-            
-            // Use the first search result
-            youtubeUrl = searchResponse.data.result[0].url;
+        // Search for the song using yt-search
+        const searchResults = await yts(query);
+        
+        if (!searchResults || !searchResults.videos || searchResults.videos.length === 0) {
+            await socket.sendMessage(sender, {
+                text: "❌ No results found for your search."
+            });
+            break;
         }
 
-        // Download the MP3
+        // Use the first search result
+        const video = searchResults.videos[0];
+        const youtubeUrl = video.url;
+
+        // Download the MP3 using the specified API
         const response = await axios.get(`https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(youtubeUrl)}`);
         
         if (!response.data.status || !response.data.download_url) {
@@ -758,16 +755,19 @@ case 'song': {
             ptt: false,
             contextInfo: {
                 externalAdReply: {
-                    title: songData.title,
-                    body: `Duration: ${Math.floor(songData.duration / 60)}:${(songData.duration % 60).toString().padStart(2, '0')}`,
-                    thumbnail: { url: songData.thumbnail },
+                    title: songData.title || video.title,
+                    body: `Duration: ${video.timestamp || Math.floor(songData.duration / 60)}:${(songData.duration % 60).toString().padStart(2, '0')}`,
+                    thumbnail: { url: songData.thumbnail || video.thumbnail },
                     mediaType: 2,
                     mediaUrl: youtubeUrl,
                     sourceUrl: youtubeUrl
                 }
             }
-        }, {
-            quoted: msg
+        });
+
+        // Send song info as separate message
+        await socket.sendMessage(sender, {
+            text: `🎵 *${songData.title || video.title}*\n👤 Artist: ${video.author.name || 'Unknown'}\n⏱️ Duration: ${video.timestamp || Math.floor(songData.duration / 60)}:${(songData.duration % 60).toString().padStart(2, '0')}\n🎬 Views: ${video.views}\n📅 Uploaded: ${video.ago}\n\n🔗 *YouTube URL:* ${youtubeUrl}`
         });
 
     } catch (err) {
@@ -779,12 +779,12 @@ case 'song': {
     break;
 }
 
-
+// Add the play command (same as song but sends as document)
 case 'play': {
     try {
         if (!args[0]) {
             await socket.sendMessage(sender, { 
-                text: "🎵 Please provide a song name or YouTube URL.\n\nExample: *.play Shape of You* or *.play https://youtu.be/...*" 
+                text: "🎵 Please provide a song name.\n\nExample: *.play Shape of You*" 
             });
             break;
         }
@@ -794,24 +794,21 @@ case 'play': {
             text: `🔍 Searching for *${query}*...`
         });
 
-        // Check if it's a YouTube URL or search query
-        let youtubeUrl = query;
-        if (!query.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+/)) {
-            // If it's not a URL, search for the song first
-            const searchResponse = await axios.get(`https://api.zenzxz.my.id/search/ytsearch?query=${encodeURIComponent(query)}`);
-            
-            if (!searchResponse.data || !searchResponse.data.result || searchResponse.data.result.length === 0) {
-                await socket.sendMessage(sender, {
-                    text: "❌ No results found for your search."
-                });
-                break;
-            }
-            
-            // Use the first search result
-            youtubeUrl = searchResponse.data.result[0].url;
+        // Search for the song using yt-search
+        const searchResults = await yts(query);
+        
+        if (!searchResults || !searchResults.videos || searchResults.videos.length === 0) {
+            await socket.sendMessage(sender, {
+                text: "❌ No results found for your search."
+            });
+            break;
         }
 
-        // Download the MP3
+        // Use the first search result
+        const video = searchResults.videos[0];
+        const youtubeUrl = video.url;
+
+        // Download the MP3 using the specified API
         const response = await axios.get(`https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(youtubeUrl)}`);
         
         if (!response.data.status || !response.data.download_url) {
@@ -822,26 +819,24 @@ case 'play': {
         }
 
         const songData = response.data;
-        const fileName = `${songData.title.replace(/[^a-zA-Z0-9]/g, '_')}.mp3`;
+        const fileName = `${(songData.title || video.title).replace(/[^a-zA-Z0-9]/g, '_')}.mp3`;
         
         // Send as document
         await socket.sendMessage(sender, {
             document: { url: songData.download_url },
             mimetype: 'audio/mpeg',
             fileName: fileName,
-            caption: `🎵 *${songData.title}*\n⏱️ Duration: ${Math.floor(songData.duration / 60)}:${(songData.duration % 60).toString().padStart(2, '0')}\n🎨 Quality: ${songData.format || '128kbps'}`,
+            caption: `🎵 *${songData.title || video.title}*\n👤 Artist: ${video.author.name || 'Unknown'}\n⏱️ Duration: ${video.timestamp || Math.floor(songData.duration / 60)}:${(songData.duration % 60).toString().padStart(2, '0')}\n🎬 Views: ${video.views}\n📅 Uploaded: ${video.ago}`,
             contextInfo: {
                 externalAdReply: {
-                    title: songData.title,
-                    body: `Terri`,
-                    thumbnail: { url: songData.thumbnail },
+                    title: songData.title || video.title,
+                    body: `powered by terri`,
+                    thumbnail: { url: songData.thumbnail || video.thumbnail },
                     mediaType: 2,
                     mediaUrl: youtubeUrl,
                     sourceUrl: youtubeUrl
                 }
             }
-        }, {
-            quoted: msg
         });
 
     } catch (err) {
